@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CS-AMM 利差机会中心</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar glass-panel">
+        <div class="brand-block">
+          <p class="eyebrow">CS-AMM</p>
+          <h1>跨平台饰品利差机会中心</h1>
+          <p class="topline" id="statusText">等待行情更新</p>
+        </div>
+        <div class="top-actions">
+          <span class="mode-chip">执行前预检</span>
+          <button id="refreshBtn" class="primary-button" type="button">刷新行情</button>
+        </div>
+      </header>
+
+      <section class="summary-grid" aria-label="利差概览">
+        <article class="metric glass-panel">
+          <span>机会总数</span>
+          <strong id="totalCount">-</strong>
+        </article>
+        <article class="metric glass-panel">
+          <span>即时成交</span>
+          <strong id="instantCount">-</strong>
+        </article>
+        <article class="metric glass-panel">
+          <span>挂单观察</span>
+          <strong id="theoreticalCount">-</strong>
+        </article>
+        <article class="metric glass-panel">
+          <span>可操作机会</span>
+          <strong id="strongCount">-</strong>
+        </article>
+        <article class="metric glass-panel">
+          <span>最高净利率</span>
+          <strong id="bestRate">-</strong>
+        </article>
+      </section>
+
+      <nav class="filters glass-panel" aria-label="机会筛选">
+        <button class="filter active" data-filter="all" type="button">全部</button>
+        <button class="filter" data-filter="instant" type="button">即时成交</button>
+        <button class="filter" data-filter="theoretical" type="button">挂单观察</button>
+        <button class="filter" data-filter="strong" type="button">可操作</button>
+        <button class="filter" data-filter="watch" type="button">需复核</button>
+      </nav>
+
+      <section class="workspace">
+        <section class="panel glass-panel opportunity-panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">机会列表</p>
+              <h2>利差机会</h2>
+            </div>
+            <span id="filterCount" class="panel-meta">-</span>
+          </div>
+          <div id="opportunityList" class="opportunity-list"></div>
+        </section>
+
+        <aside class="side-column">
+          <section class="panel glass-panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">报价矩阵</p>
+                <h2>平台行情</h2>
+              </div>
+            </div>
+            <div id="oracleList" class="oracle-list"></div>
+          </section>
+
+          <section class="panel glass-panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">平台覆盖</p>
+                <h2>市场目录</h2>
+              </div>
+            </div>
+            <div id="platformCoverage" class="platform-coverage"></div>
+          </section>
+
+          <section id="dryRunPanel" class="panel glass-panel dry-run hidden">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">执行预检</p>
+                <h2>操作预案</h2>
+              </div>
+              <button id="closeDryRun" class="ghost-button" type="button">关闭</button>
+            </div>
+            <div id="dryRunContent"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
