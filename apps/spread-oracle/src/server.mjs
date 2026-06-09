@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { buildConnectivitySnapshot } from './connectivity.mjs'
 import { buildDryRun, buildSnapshot } from './oracle.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -34,6 +35,11 @@ const server = createServer(async (req, res) => {
 
     if (url.pathname === '/api/platforms') {
       return json(res, buildSnapshot().platformCoverage)
+    }
+
+    if (url.pathname === '/api/platform-connectivity') {
+      const refresh = url.searchParams.get('refresh') === '1'
+      return json(res, await buildConnectivitySnapshot({ force: refresh }))
     }
 
     if (url.pathname.startsWith('/api/opportunities/')) {

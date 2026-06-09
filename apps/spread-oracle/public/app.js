@@ -1,7 +1,19 @@
 let snapshot = null
+let connectivity = null
 let activeFilter = 'all'
+let activeView = 'overview'
+
+const viewTitles = {
+  overview: '总览',
+  opportunities: '利差机会',
+  exchanges: '交易所列表',
+  markets: '平台行情',
+  precheck: '操作预案',
+}
 
 const refs = {
+  viewTitle: document.querySelector('#viewTitle'),
+  sidebarPlatformCount: document.querySelector('#sidebarPlatformCount'),
   totalCount: document.querySelector('#totalCount'),
   instantCount: document.querySelector('#instantCount'),
   theoreticalCount: document.querySelector('#theoreticalCount'),
@@ -12,13 +24,20 @@ const refs = {
   opportunityList: document.querySelector('#opportunityList'),
   oracleList: document.querySelector('#oracleList'),
   platformCoverage: document.querySelector('#platformCoverage'),
-  dryRunPanel: document.querySelector('#dryRunPanel'),
+  exchangeSummary: document.querySelector('#exchangeSummary'),
+  exchangeList: document.querySelector('#exchangeList'),
   dryRunContent: document.querySelector('#dryRunContent'),
 }
 
 document.querySelector('#refreshBtn').addEventListener('click', load)
+document.querySelector('#refreshConnectivityBtn').addEventListener('click', () => loadConnectivity({ force: true }))
 document.querySelector('#closeDryRun').addEventListener('click', () => {
-  refs.dryRunPanel.classList.add('hidden')
+  refs.dryRunContent.innerHTML = '选择一条利差机会后查看操作预案'
+  refs.dryRunContent.classList.add('empty-state')
+})
+
+document.querySelectorAll('.side-tab').forEach((button) => {
+  button.addEventListener('click', () => showView(button.dataset.view))
 })
 
 document.querySelectorAll('.filter').forEach((button) => {
@@ -26,7 +45,7 @@ document.querySelectorAll('.filter').forEach((button) => {
     activeFilter = button.dataset.filter
     document.querySelectorAll('.filter').forEach((item) => item.classList.remove('active'))
     button.classList.add('active')
-    render()
+    renderOpportunities()
   })
 })
 
@@ -45,10 +64,38 @@ async function load() {
     snapshot = await response.json()
     refs.statusText.textContent = '行情、费率与流动性已更新'
     render()
+    if (activeView === 'exchanges') await loadConnectivity()
   } catch (error) {
     refs.statusText.textContent = `更新失败：${error.message}`
     refs.opportunityList.innerHTML = renderEmpty('暂时无法获取利差机会，请稍后刷新')
   }
+}
+
+async function loadConnectivity({ force = false } = {}) {
+  refs.exchangeSummary.innerHTML = renderEmpty('正在检测平台连通性')
+
+  try {
+    const response = await fetch(`/api/platform-connectivity${force ? '?refresh=1' : ''}`)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    connectivity = await response.json()
+    renderExchanges()
+  } catch (error) {
+    refs.exchangeSummary.innerHTML = renderEmpty(`连通性检测失败：${escapeHtml(error.message)}`)
+  }
+}
+
+function showView(view) {
+  activeView = view
+  refs.viewTitle.textContent = viewTitles[view] || view
+
+  document.querySelectorAll('.side-tab').forEach((button) => {
+    button.classList.toggle('active', button.dataset.view === view)
+  })
+  document.querySelectorAll('[data-view-panel]').forEach((panel) => {
+    panel.classList.toggle('active', panel.dataset.viewPanel === view)
+  })
+
+  if (view === 'exchanges' && !connectivity) loadConnectivity()
 }
 
 function render() {
@@ -59,15 +106,21 @@ function render() {
   refs.theoreticalCount.textContent = snapshot.summary.theoreticalCount
   refs.strongCount.textContent = snapshot.summary.strongExecutable
   refs.bestRate.textContent = pct(snapshot.summary.bestNetProfitRate)
+  refs.sidebarPlatformCount.textContent = `${snapshot.platformCoverage.summary.catalogTotal} 个平台`
 
+  refs.platformCoverage.innerHTML = renderPlatformCoverage(snapshot.platformCoverage)
+  refs.oracleList.innerHTML = snapshot.oracleResults.map(renderMarketMatrix).join('')
+  renderOpportunities()
+  renderExchanges()
+}
+
+function renderOpportunities() {
+  if (!snapshot) return
   const opportunities = filterOpportunities(snapshot.opportunities)
   refs.filterCount.textContent = `${opportunities.length} 条`
   refs.opportunityList.innerHTML = opportunities.length
     ? opportunities.map(renderOpportunity).join('')
     : renderEmpty('当前筛选条件下没有符合条件的机会')
-
-  refs.oracleList.innerHTML = snapshot.oracleResults.map(renderMarketMatrix).join('')
-  refs.platformCoverage.innerHTML = renderPlatformCoverage(snapshot.platformCoverage)
 }
 
 function filterOpportunities(opportunities) {
@@ -205,20 +258,51 @@ function renderPlatformCoverage(coverage) {
       <span>来源</span>
       <a href="${escapeAttr(coverage.source.url)}" target="_blank" rel="noreferrer">${escapeHtml(coverage.source.name)}</a>
     </div>
-    <div class="platform-list">
-      ${coverage.catalog.map(renderPlatformItem).join('')}
-    </div>
   `
 }
 
-function renderPlatformItem(platform) {
+function renderExchanges() {
+  if (!snapshot?.platformCoverage) return
+
+  const catalog = snapshot.platformCoverage.catalog
+  const connectionMap = new Map((connectivity?.items || []).map((item) => [item.platformId, item]))
+  refs.exchangeSummary.innerHTML = renderExchangeSummary(connectivity, catalog.length)
+  refs.exchangeList.innerHTML = catalog.map((platform) => renderExchangeRow(platform, connectionMap.get(platform.platformId))).join('')
+}
+
+function renderExchangeSummary(data, total) {
+  const summary = data?.summary
+
   return `
-    <article class="platform-item">
-      <div>
+    <div class="exchange-metric"><span>支持平台</span><strong>${total}</strong></div>
+    <div class="exchange-metric"><span>在线/可访问</span><strong>${summary ? summary.online + summary.reachable : '-'}</strong></div>
+    <div class="exchange-metric"><span>超时/不可达</span><strong>${summary ? summary.timeout + summary.offline : '-'}</strong></div>
+    <div class="exchange-metric"><span>中位延迟</span><strong>${summary?.medianLatencyMs ? `${summary.medianLatencyMs}ms` : '-'}</strong></div>
+  `
+}
+
+function renderExchangeRow(platform, connection) {
+  const status = connection?.connectivityStatus || 'PENDING'
+  const latency = Number.isFinite(connection?.latencyMs) ? `${connection.latencyMs}ms` : '-'
+  const httpStatus = connection?.httpStatus || '-'
+  const probeLabel = platform.probeTargetKind === 'direct' ? '平台官网' : '目录页'
+  const liveStatus = platform.liveConnectionStatus === 'NOT_CONNECTED' ? '真实行情待接入' : platform.liveConnectionStatus
+  const feeStatus = platform.feeProfileStatus === 'REQUIRES_PLATFORM_VERIFICATION' ? '费率待验证' : platform.feeProfileStatus
+
+  return `
+    <article class="exchange-row">
+      <div class="exchange-main">
         <strong>${escapeHtml(platform.name)}</strong>
-        <span>${escapeHtml(platform.marketType)} · 评分 ${Number(platform.marketStats.rating).toFixed(1)}</span>
+        <span>${escapeHtml(platform.marketType)} · 评分 ${Number(platform.marketStats.rating).toFixed(1)} · ${escapeHtml(platform.marketStats.marketValue)}</span>
       </div>
-      <em>${platform.pricingModelStatus === 'PRICING_MODEL_SAMPLE' ? '计算模型已校验' : '真实行情待接入'}</em>
+      <div class="exchange-badges">
+        <span class="connectivity-pill ${status.toLowerCase()}">${connectivityName(status)}</span>
+        <span>${latency}</span>
+        <span>HTTP ${httpStatus}</span>
+        <span>${escapeHtml(liveStatus)}</span>
+        <span>${escapeHtml(feeStatus)}</span>
+        <a href="${escapeAttr(connection?.probeUrl || platform.probeUrl)}" target="_blank" rel="noreferrer">${probeLabel}</a>
+      </div>
     </article>
   `
 }
@@ -239,10 +323,11 @@ async function openExecutionPreview(opportunityId) {
   const plan = await response.json()
   refs.statusText.textContent = '操作预案已生成'
   renderExecutionPreview(plan)
+  showView('precheck')
 }
 
 function renderExecutionPreview(plan) {
-  refs.dryRunPanel.classList.remove('hidden')
+  refs.dryRunContent.classList.remove('empty-state')
   refs.dryRunContent.innerHTML = `
     <article class="dry-run-card">
       <div class="pill-row">
@@ -265,7 +350,6 @@ function renderExecutionPreview(plan) {
       </div>
     </article>
   `
-  refs.dryRunPanel.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function renderEmpty(text) {
@@ -300,6 +384,18 @@ function confidenceName(value) {
     LOW: '低',
     INVALID: '无效',
   }[value] || value
+}
+
+function connectivityName(status) {
+  return {
+    ONLINE: '在线',
+    REACHABLE: '可访问',
+    DEGRADED: '异常',
+    TIMEOUT: '超时',
+    OFFLINE: '不可达',
+    UNKNOWN: '未知',
+    PENDING: '待检测',
+  }[status] || status
 }
 
 function pct(value) {

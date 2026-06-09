@@ -30,6 +30,41 @@ const NOT_CONNECTED_STATUS = {
   reconciliation: 'PENDING',
 }
 
+const PROBE_TARGETS = {
+  steam: ['https://steamcommunity.com/market/', 'direct'],
+  csfloat: ['https://csfloat.com/', 'direct'],
+  'lis-skins': ['https://lis-skins.com/', 'direct'],
+  'cs-money': ['https://cs.money/', 'direct'],
+  skinport: ['https://skinport.com/', 'direct'],
+  tradeit: ['https://tradeit.gg/', 'direct'],
+  buff163: ['https://buff.163.com/market/', 'direct'],
+  gameboost: ['https://gameboost.com/', 'direct'],
+  dmarket: ['https://dmarket.com/', 'direct'],
+  'cs2-market': ['https://cs2.com/', 'direct'],
+  pirateswap: ['https://pirateswap.com/', 'direct'],
+  skinswap: ['https://skinswap.com/', 'direct'],
+  'skin-land': ['https://skin.land/', 'direct'],
+  'avan-market': ['https://avan.market/', 'direct'],
+  skinflow: ['https://skinflow.gg/', 'direct'],
+  'aim-market': ['https://aim.market/', 'direct'],
+  'mannco-store': ['https://mannco.store/', 'direct'],
+  'white-market': ['https://white.market/', 'direct'],
+  skinbaron: ['https://skinbaron.de/', 'direct'],
+  skinplace: ['https://skinplace.com/', 'direct'],
+  'buff-market': ['https://buff.market/', 'direct'],
+  shadowpay: ['https://shadowpay.com/', 'direct'],
+  waxpeer: ['https://waxpeer.com/', 'direct'],
+  skinout: ['https://skinout.gg/', 'direct'],
+  'cs-trade': ['https://cs.trade/', 'direct'],
+  skinvault: ['https://skinvault.gg/', 'direct'],
+  uuskins: ['https://csgoskins.gg/markets/uuskins', 'directory'],
+  'skins-com': ['https://skins.com/', 'direct'],
+  haloskins: ['https://haloskins.com/', 'direct'],
+  exeskins: ['https://exeskins.com/', 'direct'],
+  ntskins: ['https://ntskins.com/', 'direct'],
+  dupe: ['https://csgoskins.gg/markets/dupe', 'directory'],
+}
+
 export const platformCatalogSource = {
   name: 'CSGOSKINS.GG Markets',
   url: CSGOSKINS_MARKETS_URL,
@@ -96,11 +131,15 @@ export function buildPlatformCoverage(pricingPlatforms = []) {
 }
 
 function market(id, name, slug, rating, reviews, items, offers, value, avgDiscountRate, monthlyVisits, marketType) {
+  const [probeUrl, probeTargetKind] = PROBE_TARGETS[id] || [`${CSGOSKINS_MARKETS_URL}/${slug}`, 'directory']
+
   return {
     platformId: id,
     name,
     marketType,
     sourceUrl: `${CSGOSKINS_MARKETS_URL}/${slug}`,
+    probeUrl,
+    probeTargetKind,
     directoryStatus: 'LISTED',
     liveConnectionStatus: 'NOT_CONNECTED',
     feeProfileStatus: 'REQUIRES_PLATFORM_VERIFICATION',

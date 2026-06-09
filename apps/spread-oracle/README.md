@@ -1,6 +1,6 @@
 # 利差机会中心
 
-`apps/spread-oracle` 是 CS Skin AMM Dashboard 的可运行应用，负责展示跨平台利差机会、平台行情矩阵、平台覆盖目录和执行前预检。
+`apps/spread-oracle` 是 CS Skin AMM Dashboard 的可运行应用，负责展示跨平台利差机会、平台行情矩阵、平台覆盖目录、交易所连通性和执行前预检。
 
 ## 功能
 
@@ -9,6 +9,7 @@
 - 费用拆解：卖出费、买入费、maker/taker、资金成本、汇率成本和风险缓冲。
 - 流动性过滤：库存、余额、bid 深度、ask 深度、滑点和平台健康度不足时降级或过滤。
 - 平台覆盖：展示 CSGOSKINS.GG markets 目录中的 32 个市场。
+- 交易所列表：左侧 tab dashboard 中展示当前支持平台、连通性、延迟和接入状态。
 - 执行前预检：生成进入下一步人工审核前的检查步骤和风险提醒。
 
 ## 运行
@@ -37,6 +38,7 @@ npm run smoke
 | `/api/health` | 健康检查 |
 | `/api/snapshot` | 完整快照，包含机会、报价矩阵和平台覆盖 |
 | `/api/platforms` | 平台目录、市场统计和接入状态 |
+| `/api/platform-connectivity` | 平台连通性、延迟、HTTP 状态和探测目标 |
 | `/api/opportunities` | 机会列表 |
 | `/api/opportunities/:id` | 机会详情 |
 | `/api/precheck` | 执行前预检 |
