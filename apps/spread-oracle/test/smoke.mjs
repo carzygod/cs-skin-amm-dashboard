@@ -1,4 +1,5 @@
 import { buildDryRun, buildSnapshot } from '../src/oracle.mjs'
+import { platformCatalog } from '../src/platform-catalog.mjs'
 
 const snapshot = buildSnapshot()
 
@@ -26,6 +27,20 @@ if (!snapshot.summary.instantCount || !snapshot.summary.theoreticalCount) {
 
 if (!snapshot.platformCoverage || snapshot.platformCoverage.summary.catalogTotal !== 32) {
   throw new Error('expected 32 platforms from CSGOSKINS.GG markets directory')
+}
+
+if (platformCatalog.length !== 32) {
+  throw new Error('expected 32 platforms in platform catalog')
+}
+
+if (!platformCatalog.every((platform) => platform.sourceUrl && platform.probeUrl && platform.probeTargetKind)) {
+  throw new Error('expected source and connectivity probe target for every platform')
+}
+
+for (const requiredPlatform of ['Steam', 'CSFloat', 'Skinport', 'DMarket', 'WAXPEER', 'BUFF163']) {
+  if (!platformCatalog.some((platform) => platform.name === requiredPlatform)) {
+    throw new Error(`expected platform catalog to include ${requiredPlatform}`)
+  }
 }
 
 if (!snapshot.opportunities.every((item) => item.feeBreakdown && typeof item.feeBreakdown.depositCost === 'number')) {

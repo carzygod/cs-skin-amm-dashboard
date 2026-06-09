@@ -125,6 +125,7 @@ systemctl enable --now cs-amm-spread-oracle.service
 | `docs/开发文档.md` | 工程模块、接口、数据模型和测试策略 |
 | `docs/数据采集与价格预言机.md` | 盘口、VWAP、报价归一和流动性规则 |
 | `docs/平台接入矩阵.md` | 32 个市场的目录字段、能力字段和接入状态 |
+| `docs/验收复查.md` | 当前要求与文档要求的逐项复查结果 |
 | `docs/恢复说明.md` | 当前恢复内容和后续路线 |
 | `docs/恢复文档合集.pdf` | 文档合集导出件 |
 

@@ -150,6 +150,6 @@ async function mapLimit(items, limit, mapper) {
 
 function normalizeError(error) {
   if (!error) return null
-  if (error.name === 'AbortError') return 'timeout'
+  if (error.name === 'AbortError' || error.message === 'probe-timeout') return 'timeout'
   return error.code || error.cause?.code || error.name || 'network-error'
 }

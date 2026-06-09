@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -24,6 +25,7 @@ DOCS = [
     ("开发文档", ROOT / "docs" / "开发文档.md"),
     ("数据采集与价格预言机", ROOT / "docs" / "数据采集与价格预言机.md"),
     ("平台接入矩阵", ROOT / "docs" / "平台接入矩阵.md"),
+    ("验收复查", ROOT / "docs" / "验收复查.md"),
     ("恢复说明", ROOT / "docs" / "恢复说明.md"),
 ]
 
@@ -50,6 +52,7 @@ def main():
         author="CS-AMM",
     )
     doc.build(story)
+    scrub_pdf_metadata()
     print(f"rendered {OUTPUT}")
 
 
@@ -156,7 +159,7 @@ def build_cover(styles):
         Paragraph("CS-AMM", styles["CoverPill"]),
         Paragraph("CS2 饰品库存对敲套利系统文档合集", styles["CoverTitle"]),
         Paragraph(
-            "本 PDF 汇总需求文档、开发文档、数据采集与价格预言机设计、恢复说明。"
+            "本 PDF 汇总需求文档、开发文档、数据采集与价格预言机设计、平台接入矩阵、验收复查和恢复说明。"
             "内容用于工程恢复、继续开发和后续验收，不包含时间戳、账号凭证、会话、令牌或支付信息。",
             styles["CoverBody"],
         ),
@@ -263,6 +266,13 @@ def escape(value):
         .replace("<", "&lt;")
         .replace(">", "&gt;")
     )
+
+
+def scrub_pdf_metadata():
+    data = OUTPUT.read_bytes()
+    data = re.sub(rb"/CreationDate \(D:[^)]*\)", b"/CreationDate ()", data)
+    data = re.sub(rb"/ModDate \(D:[^)]*\)", b"/ModDate ()", data)
+    OUTPUT.write_bytes(data)
 
 
 if __name__ == "__main__":

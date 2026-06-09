@@ -72,15 +72,19 @@ async function load() {
 }
 
 async function loadConnectivity({ force = false } = {}) {
-  refs.exchangeSummary.innerHTML = renderEmpty('正在检测平台连通性')
+  const total = snapshot?.platformCoverage?.catalog?.length || 0
+  refs.exchangeSummary.innerHTML = renderExchangeSummary(connectivity, total)
+  refs.statusText.textContent = '正在检测平台连通性'
 
   try {
     const response = await fetch(`/api/platform-connectivity${force ? '?refresh=1' : ''}`)
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     connectivity = await response.json()
+    refs.statusText.textContent = '平台连通性已更新'
     renderExchanges()
   } catch (error) {
-    refs.exchangeSummary.innerHTML = renderEmpty(`连通性检测失败：${escapeHtml(error.message)}`)
+    refs.statusText.textContent = `连通性检测失败：${error.message}`
+    refs.exchangeSummary.innerHTML = renderExchangeSummary(connectivity, total)
   }
 }
 
@@ -277,7 +281,7 @@ function renderExchangeSummary(data, total) {
     <div class="exchange-metric"><span>支持平台</span><strong>${total}</strong></div>
     <div class="exchange-metric"><span>在线/可访问</span><strong>${summary ? summary.online + summary.reachable : '-'}</strong></div>
     <div class="exchange-metric"><span>超时/不可达</span><strong>${summary ? summary.timeout + summary.offline : '-'}</strong></div>
-    <div class="exchange-metric"><span>中位延迟</span><strong>${summary?.medianLatencyMs ? `${summary.medianLatencyMs}ms` : '-'}</strong></div>
+    <div class="exchange-metric"><span>中位延迟</span><strong>${Number.isFinite(summary?.medianLatencyMs) ? `${summary.medianLatencyMs}ms` : '-'}</strong></div>
   `
 }
 
