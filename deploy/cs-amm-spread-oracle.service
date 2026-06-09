@@ -1,0 +1,17 @@
+[Unit]
+Description=CS AMM Spread Oracle Dashboard
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/cs-amm/apps/spread-oracle
+Environment=HOST=0.0.0.0
+Environment=PORT=4873
+ExecStart=/usr/local/bin/node /root/cs-amm/apps/spread-oracle/src/server.mjs
+Restart=always
+RestartSec=3
+StandardOutput=append:/root/cs-amm/apps/spread-oracle/server.log
+StandardError=append:/root/cs-amm/apps/spread-oracle/server.log
+
+[Install]
+WantedBy=multi-user.target

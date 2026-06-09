@@ -48,7 +48,8 @@ const server = createServer(async (req, res) => {
       return plan ? json(res, plan) : notFound(res)
     }
 
-    return staticFile(res, url.pathname)
+    await staticFile(res, url.pathname)
+    return undefined
   } catch (error) {
     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
     res.end(JSON.stringify({ ok: false, error: error.message }))
@@ -62,9 +63,14 @@ server.listen(port, host, () => {
 async function staticFile(res, pathname) {
   const safePath = normalize(pathname === '/' ? '/index.html' : pathname).replace(/^(\.\.[/\\])+/, '')
   const fullPath = join(publicDir, safePath)
-  const data = await readFile(fullPath)
-  res.writeHead(200, { 'Content-Type': mime[extname(fullPath)] || 'application/octet-stream' })
-  res.end(data)
+  try {
+    const data = await readFile(fullPath)
+    res.writeHead(200, { 'Content-Type': mime[extname(fullPath)] || 'application/octet-stream' })
+    res.end(data)
+  } catch (error) {
+    if (error.code === 'ENOENT') return notFound(res)
+    throw error
+  }
 }
 
 function json(res, data) {

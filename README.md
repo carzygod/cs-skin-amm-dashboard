@@ -88,6 +88,21 @@ npm run smoke
 | `npm run check` | 检查服务端、前端脚本、样例数据、平台目录和测试文件语法 |
 | `npm run smoke` | 验证机会拆分、费用拆解、平台目录数量和执行预检输出 |
 
+## 服务器运行
+
+推荐用 systemd 托管服务，避免手动后台进程退出后无人拉起。仓库提供了服务模板：
+
+```text
+deploy/cs-amm-spread-oracle.service
+```
+
+该服务使用 `Restart=always`，并将日志写入应用目录下的 `server.log`。部署到服务器后执行：
+
+```bash
+systemctl daemon-reload
+systemctl enable --now cs-amm-spread-oracle.service
+```
+
 ## API
 
 | 接口 | 方法 | 说明 |
