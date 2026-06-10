@@ -10,6 +10,7 @@ const opportunityControls = {
   sellExchange: '',
   buyExchange: '',
 }
+const MAX_RENDERED_OPPORTUNITIES = 300
 
 const viewTitles = {
   overview: '总览',
@@ -164,9 +165,13 @@ function render() {
 function renderOpportunities() {
   if (!snapshot) return
   const opportunities = filterOpportunities(snapshot.opportunities)
-  refs.filterCount.textContent = `${opportunities.length} 条`
-  refs.opportunityList.innerHTML = opportunities.length
-    ? opportunities.map(renderOpportunity).join('')
+  const visibleOpportunities = opportunities.slice(0, MAX_RENDERED_OPPORTUNITIES)
+  refs.filterCount.textContent =
+    opportunities.length > visibleOpportunities.length
+      ? `${opportunities.length} 条 · 显示前 ${visibleOpportunities.length} 条`
+      : `${opportunities.length} 条`
+  refs.opportunityList.innerHTML = visibleOpportunities.length
+    ? visibleOpportunities.map(renderOpportunity).join('')
     : renderEmpty('当前筛选条件下没有符合条件的机会')
 }
 

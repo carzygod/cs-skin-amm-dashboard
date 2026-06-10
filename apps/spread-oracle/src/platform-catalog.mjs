@@ -59,6 +59,7 @@ const PROBE_TARGETS = {
   skinvault: ['https://skinvault.gg/', 'direct'],
   uuskins: ['https://csgoskins.gg/markets/uuskins', 'directory'],
   'skins-com': ['https://skins.com/', 'direct'],
+  'market-csgo': ['https://market.csgo.com/en/', 'direct'],
   haloskins: ['https://haloskins.com/', 'direct'],
   exeskins: ['https://exeskins.com/', 'direct'],
   ntskins: ['https://ntskins.com/', 'direct'],
@@ -66,11 +67,11 @@ const PROBE_TARGETS = {
 }
 
 export const platformCatalogSource = {
-  name: 'CSGOSKINS.GG Markets',
+  name: 'CSGOSKINS.GG Markets + manual market.csgo.com',
   url: CSGOSKINS_MARKETS_URL,
-  sourceScope: 'market-directory',
+  sourceScope: 'market-directory-plus-manual',
   notes:
-    'The directory page is used as the canonical platform list. Fees and execution capabilities still require direct platform or account-level verification before live trading.',
+    'The CSGOSKINS.GG directory is used as the canonical market baseline, with market.csgo.com added as a manual platform request. Fees and execution capabilities still require direct platform or account-level verification before live trading.',
 }
 
 export const platformCatalog = [
@@ -102,6 +103,9 @@ export const platformCatalog = [
   market('skinvault', 'Skinvault', 'skinvault', 4.0, '172', '19.8K', '638.5K', '$20M', 30.6, '137.6K', 'cash-market'),
   market('uuskins', 'UUSKINS', 'uuskins', 4.2, '149', '29.2K', '3.3M', '$160.7M', 29.6, '125.4K', 'cash-market'),
   market('skins-com', 'Skins.com', 'skins-com', 3.9, '120', '12.9K', '49.4K', '$5.2M', 31.8, '106.8K', 'cash-market'),
+  market('market-csgo', 'CSGO Market', 'market-csgo', 3.8, 'manual', 'market', 'manual', 'unknown', 28.0, 'manual', 'cash-market', {
+    sourceUrl: 'https://market.csgo.com/en/',
+  }),
   market('haloskins', 'HaloSkins', 'haloskins', 3.9, '265', '27.7K', '3.9M', '$39.7M', 30.3, '65.6K', 'cash-market'),
   market('exeskins', 'Exeskins', 'exeskins', 4.1, '34', '20.8K', '740.6K', '$18.4M', 30.6, '64.7K', 'cash-market'),
   market('ntskins', 'NTSkins', 'ntskins', 3.5, '14', '29.2K', '3M', '$133.2M', 20.8, '5K', 'cash-market'),
@@ -139,14 +143,14 @@ export function buildPlatformCoverage(pricingPlatforms = []) {
   }
 }
 
-function market(id, name, slug, rating, reviews, items, offers, value, avgDiscountRate, monthlyVisits, marketType) {
+function market(id, name, slug, rating, reviews, items, offers, value, avgDiscountRate, monthlyVisits, marketType, options = {}) {
   const [probeUrl, probeTargetKind] = PROBE_TARGETS[id] || [`${CSGOSKINS_MARKETS_URL}/${slug}`, 'directory']
 
   return {
     platformId: id,
     name,
     marketType,
-    sourceUrl: `${CSGOSKINS_MARKETS_URL}/${slug}`,
+    sourceUrl: options.sourceUrl || `${CSGOSKINS_MARKETS_URL}/${slug}`,
     probeUrl,
     probeTargetKind,
     directoryStatus: 'LISTED',

@@ -26,29 +26,60 @@ if (!snapshot.summary.instantCount || !snapshot.summary.theoreticalCount) {
   throw new Error('expected split summary counters')
 }
 
-if (!snapshot.platformCoverage || snapshot.platformCoverage.summary.catalogTotal !== 32) {
-  throw new Error('expected 32 platforms from CSGOSKINS.GG markets directory')
+if (!snapshot.platformCoverage || snapshot.platformCoverage.summary.catalogTotal !== 33) {
+  throw new Error('expected 33 platforms including market.csgo.com')
 }
 
-if (snapshot.platformCoverage.summary.sampleQuoteCoverage !== 32) {
-  throw new Error('expected sample quote coverage for all 32 platforms')
+if (snapshot.platformCoverage.summary.sampleQuoteCoverage !== 33) {
+  throw new Error('expected sample quote coverage for all 33 platforms')
 }
 
-if (!snapshot.oracleResults.every((item) => item.quotes.length === 32)) {
-  throw new Error('expected every oracle result to include all 32 platform quotes')
+if (!snapshot.oracleResults.every((item) => item.quotes.length === 33)) {
+  throw new Error('expected every oracle result to include all 33 platform quotes')
 }
 
-if (platformCatalog.length !== 32) {
-  throw new Error('expected 32 platforms in platform catalog')
+if (platformCatalog.length !== 33) {
+  throw new Error('expected 33 platforms in platform catalog')
 }
 
 if (!platformCatalog.every((platform) => platform.sourceUrl && platform.probeUrl && platform.probeTargetKind)) {
   throw new Error('expected source and connectivity probe target for every platform')
 }
 
-for (const requiredPlatform of ['Steam', 'CSFloat', 'Skinport', 'DMarket', 'WAXPEER', 'BUFF163']) {
+for (const requiredPlatform of ['Steam', 'CSFloat', 'Skinport', 'DMarket', 'WAXPEER', 'BUFF163', 'CSGO Market']) {
   if (!platformCatalog.some((platform) => platform.name === requiredPlatform)) {
     throw new Error(`expected platform catalog to include ${requiredPlatform}`)
+  }
+}
+
+const categoryCounts = snapshot.items.reduce((counts, item) => {
+  counts[item.category] = (counts[item.category] || 0) + 1
+  return counts
+}, {})
+
+if (
+  categoryCounts.WEAPON_CASE !== 45 ||
+  categoryCounts.STICKER_CAPSULE !== 48 ||
+  categoryCounts.AUTOGRAPH_CAPSULE !== 48 ||
+  categoryCounts.STICKER !== 48
+) {
+  throw new Error(`expected container and sticker-only item universe, got ${JSON.stringify(categoryCounts)}`)
+}
+
+const allowedCategories = new Set(['WEAPON_CASE', 'STICKER_CAPSULE', 'AUTOGRAPH_CAPSULE', 'STICKER'])
+if (!snapshot.items.every((item) => allowedCategories.has(item.category))) {
+  throw new Error('expected only weapon cases, sticker capsules, autograph capsules, and stickers')
+}
+
+for (const removedSkin of ['AK-47 | Redline', 'AWP | Asiimov', 'M4A1-S | Printstream', 'USP-S | Kill Confirmed']) {
+  if (snapshot.items.some((item) => item.name.includes(removedSkin))) {
+    throw new Error(`expected skin sample to be removed: ${removedSkin}`)
+  }
+}
+
+for (const requiredItem of ['CS:GO Weapon Case', 'Revolution Case', 'Sticker Capsule 2', 'Paris 2023 Legends Sticker Capsule']) {
+  if (!snapshot.items.some((item) => item.name === requiredItem)) {
+    throw new Error(`expected item universe to include ${requiredItem}`)
   }
 }
 
@@ -96,7 +127,7 @@ if (opportunityPlatforms.size < 10) {
   throw new Error('expected opportunities to cover more than the legacy domestic sample platforms')
 }
 
-for (const requiredOpportunityPlatform of ['CS2', 'PirateSwap', 'CS.TRADE']) {
+for (const requiredOpportunityPlatform of ['CS2', 'PirateSwap', 'CS.TRADE', 'CSGO Market']) {
   if (!opportunityPlatforms.has(requiredOpportunityPlatform)) {
     throw new Error(`expected opportunities to include ${requiredOpportunityPlatform}`)
   }
