@@ -1,22 +1,22 @@
 :root {
-  color-scheme: light;
-  --bg: #f4f7fb;
-  --sidebar: #101a24;
-  --sidebar-2: #172635;
-  --panel: #ffffff;
-  --surface: #f7fafc;
-  --surface-strong: #edf3f8;
-  --line: #d8e1ea;
-  --line-strong: #9db4ca;
-  --ink: #17212b;
-  --muted: #667487;
-  --muted-2: #8a99a8;
-  --blue: #2563eb;
-  --cyan: #0891b2;
-  --green: #0f9f6e;
-  --amber: #b7791f;
-  --red: #d33f49;
-  --shadow: 0 12px 30px rgba(15, 30, 45, 0.08);
+  color-scheme: dark;
+  --bg: #080a0d;
+  --sidebar: #0b0e12;
+  --sidebar-2: #10151b;
+  --panel: #11161d;
+  --surface: #171d25;
+  --surface-strong: #202833;
+  --line: #2a333f;
+  --line-strong: #3e4d5f;
+  --ink: #ecf2f7;
+  --muted: #96a4b4;
+  --muted-2: #718092;
+  --blue: #38bdf8;
+  --cyan: #2dd4bf;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #fb7185;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
   --radius: 8px;
 }
 
@@ -37,7 +37,7 @@ body {
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
   letter-spacing: 0;
   background:
-    linear-gradient(180deg, #f9fbfd 0%, var(--bg) 42%, #edf3f8 100%);
+    linear-gradient(180deg, #0c1015 0%, var(--bg) 52%, #0b0d11 100%);
 }
 
 button {
@@ -112,21 +112,21 @@ a {
   padding: 0 12px;
   border: 1px solid transparent;
   border-radius: var(--radius);
-  color: #b9c6d4;
-  background: rgba(255, 255, 255, 0.06);
+  color: #9fb0c2;
+  background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
   font-weight: 850;
 }
 
 .side-tab:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(45, 212, 191, 0.12);
 }
 
 .side-tab.active {
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  background: var(--blue);
+  color: #041015;
+  border-color: rgba(45, 212, 191, 0.55);
+  background: var(--cyan);
 }
 
 .sidebar-foot {
@@ -136,7 +136,7 @@ a {
   padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-foot span {
@@ -255,8 +255,8 @@ h4 {
 }
 
 .mode-chip {
-  color: var(--blue);
-  background: #eff6ff;
+  color: #8ee9ff;
+  background: rgba(56, 189, 248, 0.12);
 }
 
 .primary-button,
@@ -281,9 +281,9 @@ h4 {
 
 .primary-button,
 .dry-run-button {
-  color: #ffffff;
-  background: var(--blue);
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
+  color: #041015;
+  background: var(--cyan);
+  box-shadow: 0 12px 28px rgba(45, 212, 191, 0.18);
   font-weight: 850;
 }
 
@@ -344,9 +344,9 @@ h4 {
 }
 
 .filter.active {
-  color: #ffffff;
-  border-color: var(--blue);
-  background: var(--blue);
+  color: #041015;
+  border-color: var(--cyan);
+  background: var(--cyan);
 }
 
 .workspace {
@@ -448,28 +448,28 @@ h4 {
 }
 
 .type-pill.instant {
-  color: #075985;
-  border-color: #bae6fd;
-  background: #e0f2fe;
+  color: #8ee9ff;
+  border-color: rgba(56, 189, 248, 0.42);
+  background: rgba(56, 189, 248, 0.13);
 }
 
 .type-pill.theoretical {
-  color: #92400e;
-  border-color: #fde68a;
-  background: #fffbeb;
+  color: #facc15;
+  border-color: rgba(250, 204, 21, 0.42);
+  background: rgba(250, 204, 21, 0.12);
 }
 
 .status-pill.strong {
-  color: #047857;
-  border-color: #bbf7d0;
-  background: #ecfdf5;
+  color: #86efac;
+  border-color: rgba(52, 211, 153, 0.42);
+  background: rgba(52, 211, 153, 0.12);
 }
 
 .status-pill.watch,
 .status-pill.verify {
-  color: #92400e;
-  border-color: #fde68a;
-  background: #fffbeb;
+  color: #facc15;
+  border-color: rgba(250, 204, 21, 0.42);
+  background: rgba(250, 204, 21, 0.12);
 }
 
 .profit-stamp {
@@ -570,7 +570,7 @@ h4 {
 }
 
 .note-strip span {
-  color: #1f4f8a;
+  color: #93c5fd;
 }
 
 .reason-list {
@@ -813,35 +813,35 @@ h4 {
 }
 
 .connectivity-pill.online {
-  color: #047857;
-  border-color: #bbf7d0;
-  background: #ecfdf5;
+  color: #86efac;
+  border-color: rgba(52, 211, 153, 0.42);
+  background: rgba(52, 211, 153, 0.12);
 }
 
 .connectivity-pill.reachable {
-  color: #1d4ed8;
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  color: #8ee9ff;
+  border-color: rgba(56, 189, 248, 0.42);
+  background: rgba(56, 189, 248, 0.12);
 }
 
 .connectivity-pill.degraded,
 .connectivity-pill.timeout {
-  color: #92400e;
-  border-color: #fde68a;
-  background: #fffbeb;
+  color: #facc15;
+  border-color: rgba(250, 204, 21, 0.42);
+  background: rgba(250, 204, 21, 0.12);
 }
 
 .connectivity-pill.offline {
-  color: #b91c1c;
-  border-color: #fecaca;
-  background: #fef2f2;
+  color: #fda4af;
+  border-color: rgba(251, 113, 133, 0.42);
+  background: rgba(251, 113, 133, 0.12);
 }
 
 .connectivity-pill.unknown,
 .connectivity-pill.pending {
-  color: #475569;
-  border-color: #cbd5e1;
-  background: #f8fafc;
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.38);
+  background: rgba(148, 163, 184, 0.1);
 }
 
 .quote-table-wrap {

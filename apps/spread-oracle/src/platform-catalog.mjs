@@ -111,19 +111,28 @@ export const platformCatalog = [
 export function buildPlatformCoverage(pricingPlatforms = []) {
   const pricingNames = new Set(pricingPlatforms.map((platform) => platform.name.toLowerCase()))
   const pricingIds = new Set(pricingPlatforms.map((platform) => platform.platformId.toLowerCase()))
-  const catalog = platformCatalog.map((platform) => ({
-    ...platform,
-    pricingModelStatus: hasPricingModel(platform, pricingNames, pricingIds) ? 'PRICING_MODEL_SAMPLE' : 'CATALOG_ONLY',
-  }))
+  const catalog = platformCatalog.map((platform) => {
+    const hasSamplePricing = hasPricingModel(platform, pricingNames, pricingIds)
+    return {
+      ...platform,
+      pricingModelStatus: hasSamplePricing ? 'PRICING_MODEL_SAMPLE' : 'CATALOG_ONLY',
+      quoteCoverageStatus: hasSamplePricing ? 'SAMPLE_QUOTES_AVAILABLE' : 'CATALOG_ONLY',
+      feeProfileStatus: hasSamplePricing ? 'CATALOG_ESTIMATED' : platform.feeProfileStatus,
+      dataCompletenessStatus: hasSamplePricing ? 'DIRECTORY_WITH_SAMPLE_QUOTES' : platform.dataCompletenessStatus,
+    }
+  })
+  const pricingModelSample = catalog.filter((platform) => platform.pricingModelStatus === 'PRICING_MODEL_SAMPLE').length
+  const liveConnected = 0
 
   return {
     source: platformCatalogSource,
     summary: {
       catalogTotal: catalog.length,
       directoryCovered: catalog.length,
-      liveConnected: 0,
-      pricingModelSample: catalog.filter((platform) => platform.pricingModelStatus === 'PRICING_MODEL_SAMPLE').length,
-      pendingLiveAdapters: catalog.length,
+      liveConnected,
+      pricingModelSample,
+      sampleQuoteCoverage: pricingModelSample,
+      pendingLiveAdapters: catalog.length - liveConnected,
       requiredCapabilities: REQUIRED_CAPABILITIES,
     },
     catalog,

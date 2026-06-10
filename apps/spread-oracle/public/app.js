@@ -255,8 +255,8 @@ function renderPlatformCoverage(coverage) {
   return `
     <div class="coverage-summary">
       <div><span>目录平台</span><strong>${coverage.summary.catalogTotal}</strong></div>
-      <div><span>已纳入</span><strong>${coverage.summary.directoryCovered}</strong></div>
-      <div><span>待真实接入</span><strong>${coverage.summary.pendingLiveAdapters}</strong></div>
+      <div><span>样例行情覆盖</span><strong>${coverage.summary.sampleQuoteCoverage || coverage.summary.pricingModelSample}</strong></div>
+      <div><span>正式接口接入</span><strong>${coverage.summary.liveConnected}</strong></div>
     </div>
     <div class="platform-source">
       <span>来源</span>
@@ -290,8 +290,14 @@ function renderExchangeRow(platform, connection) {
   const latency = Number.isFinite(connection?.latencyMs) ? `${connection.latencyMs}ms` : '-'
   const httpStatus = connection?.httpStatus || '-'
   const probeLabel = platform.probeTargetKind === 'direct' ? '平台官网' : '目录页'
-  const liveStatus = platform.liveConnectionStatus === 'NOT_CONNECTED' ? '真实行情待接入' : platform.liveConnectionStatus
-  const feeStatus = platform.feeProfileStatus === 'REQUIRES_PLATFORM_VERIFICATION' ? '费率待验证' : platform.feeProfileStatus
+  const quoteStatus = platform.quoteCoverageStatus === 'SAMPLE_QUOTES_AVAILABLE' ? '样例行情覆盖' : '仅目录信息'
+  const liveStatus = platform.liveConnectionStatus === 'NOT_CONNECTED' ? '正式接口待接入' : platform.liveConnectionStatus
+  const feeStatus =
+    platform.feeProfileStatus === 'CATALOG_ESTIMATED'
+      ? '估算费率'
+      : platform.feeProfileStatus === 'REQUIRES_PLATFORM_VERIFICATION'
+        ? '费率待验证'
+        : platform.feeProfileStatus
 
   return `
     <article class="exchange-row">
@@ -303,6 +309,7 @@ function renderExchangeRow(platform, connection) {
         <span class="connectivity-pill ${status.toLowerCase()}">${connectivityName(status)}</span>
         <span>${latency}</span>
         <span>HTTP ${httpStatus}</span>
+        <span>${escapeHtml(quoteStatus)}</span>
         <span>${escapeHtml(liveStatus)}</span>
         <span>${escapeHtml(feeStatus)}</span>
         <a href="${escapeAttr(connection?.probeUrl || platform.probeUrl)}" target="_blank" rel="noreferrer">${probeLabel}</a>
