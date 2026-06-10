@@ -56,6 +56,41 @@ if (!snapshot.opportunities.every((item) => item.feeBreakdown && typeof item.fee
   throw new Error('expected deposit cost in fee breakdown')
 }
 
+for (const opportunity of snapshot.opportunities) {
+  for (const field of [
+    'unitGrossProfit',
+    'totalGrossProfit',
+    'grossProfitRate',
+    'unitNetProfit',
+    'totalNetProfit',
+    'netProfitRate',
+    'estimatedFeeTotal',
+    'estimatedFeeRate',
+    'totalCostWithRisk',
+    'totalCostRate',
+  ]) {
+    if (!Number.isFinite(opportunity[field])) {
+      throw new Error(`expected finite opportunity economics field: ${field}`)
+    }
+  }
+
+  if (opportunity.totalGrossProfit < opportunity.totalNetProfit) {
+    throw new Error('expected net profit to be no greater than gross profit after fees and risk buffer')
+  }
+
+  if (!opportunity.feeRateBreakdown?.sell || !opportunity.feeRateBreakdown?.buy) {
+    throw new Error('expected sell and buy fee rate breakdown')
+  }
+
+  if (!Number.isFinite(opportunity.feeRateBreakdown.buy.depositCostRate)) {
+    throw new Error('expected deposit cost rate in buy fee rate breakdown')
+  }
+
+  if (!Number.isFinite(opportunity.feeBreakdown.estimatedFeeTotal)) {
+    throw new Error('expected estimated fee total in fee breakdown')
+  }
+}
+
 const opportunityPlatforms = new Set(snapshot.opportunities.flatMap((item) => [item.sellPlatformName, item.buyPlatformName]))
 if (opportunityPlatforms.size < 10) {
   throw new Error('expected opportunities to cover more than the legacy domestic sample platforms')
@@ -70,6 +105,26 @@ for (const requiredOpportunityPlatform of ['CS2', 'PirateSwap', 'CS.TRADE']) {
 const frontend = readFileSync(new URL('../public/app.js', import.meta.url), 'utf8')
 if (frontend.includes('待真实接入')) {
   throw new Error('frontend should not show the confusing pending-live-adapter summary label')
+}
+
+for (const expectedText of ['毛利差', '净利差', '充值成本', 'function sortOpportunities', 'function populateExchangeFilters']) {
+  if (!frontend.includes(expectedText)) {
+    throw new Error(`expected frontend to include ${expectedText}`)
+  }
+}
+
+const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8')
+for (const expectedControl of [
+  'sortMode',
+  'spreadBasis',
+  'minSpread',
+  'maxSpread',
+  'sellExchangeFilter',
+  'buyExchangeFilter',
+]) {
+  if (!html.includes(expectedControl)) {
+    throw new Error(`expected opportunity filter control: ${expectedControl}`)
+  }
 }
 
 const best = snapshot.opportunities[0]
@@ -92,8 +147,11 @@ console.log(
         id: best.opportunityId,
         type: best.type,
         level: best.level,
+        grossProfitRate: best.grossProfitRate,
         netProfitRate: best.netProfitRate,
+        totalGrossProfit: best.totalGrossProfit,
         totalNetProfit: best.totalNetProfit,
+        estimatedFeeTotal: best.estimatedFeeTotal,
       },
     },
     null,

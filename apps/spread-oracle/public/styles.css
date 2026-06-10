@@ -349,6 +349,47 @@ h4 {
   background: var(--cyan);
 }
 
+.opportunity-controls {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(118px, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 12px;
+}
+
+.opportunity-controls label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.opportunity-controls label span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.opportunity-controls select,
+.opportunity-controls input {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.opportunity-controls select:focus,
+.opportunity-controls input:focus {
+  border-color: rgba(45, 212, 191, 0.8);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(380px, 0.65fr);
@@ -494,6 +535,12 @@ h4 {
   line-height: 1;
 }
 
+.profit-stamp small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .route-map {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -531,7 +578,7 @@ h4 {
 
 .metric-grid.compact {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin-top: 10px;
 }
@@ -922,6 +969,10 @@ h4 {
   .metric-grid.compact {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .opportunity-controls {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 920px) {
@@ -981,6 +1032,7 @@ h4 {
   .summary-grid,
   .route-map,
   .metric-grid.compact,
+  .opportunity-controls,
   .coverage-summary,
   .exchange-summary {
     grid-template-columns: 1fr;

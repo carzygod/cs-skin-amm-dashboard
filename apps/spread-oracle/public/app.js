@@ -2,6 +2,14 @@ let snapshot = null
 let connectivity = null
 let activeFilter = 'all'
 let activeView = 'overview'
+const opportunityControls = {
+  sortMode: 'net-desc',
+  spreadBasis: 'net',
+  minSpread: '',
+  maxSpread: '',
+  sellExchange: '',
+  buyExchange: '',
+}
 
 const viewTitles = {
   overview: '总览',
@@ -27,6 +35,13 @@ const refs = {
   exchangeSummary: document.querySelector('#exchangeSummary'),
   exchangeList: document.querySelector('#exchangeList'),
   dryRunContent: document.querySelector('#dryRunContent'),
+  sortMode: document.querySelector('#sortMode'),
+  spreadBasis: document.querySelector('#spreadBasis'),
+  minSpread: document.querySelector('#minSpread'),
+  maxSpread: document.querySelector('#maxSpread'),
+  sellExchangeFilter: document.querySelector('#sellExchangeFilter'),
+  buyExchangeFilter: document.querySelector('#buyExchangeFilter'),
+  resetOpportunityFilters: document.querySelector('#resetOpportunityFilters'),
 }
 
 document.querySelector('#refreshBtn').addEventListener('click', load)
@@ -47,6 +62,33 @@ document.querySelectorAll('.filter').forEach((button) => {
     button.classList.add('active')
     renderOpportunities()
   })
+})
+
+for (const [key, element] of [
+  ['sortMode', refs.sortMode],
+  ['spreadBasis', refs.spreadBasis],
+  ['minSpread', refs.minSpread],
+  ['maxSpread', refs.maxSpread],
+  ['sellExchange', refs.sellExchangeFilter],
+  ['buyExchange', refs.buyExchangeFilter],
+]) {
+  element?.addEventListener(element.tagName === 'INPUT' ? 'input' : 'change', () => {
+    opportunityControls[key] = element.value
+    renderOpportunities()
+  })
+}
+
+refs.resetOpportunityFilters?.addEventListener('click', () => {
+  Object.assign(opportunityControls, {
+    sortMode: 'net-desc',
+    spreadBasis: 'net',
+    minSpread: '',
+    maxSpread: '',
+    sellExchange: '',
+    buyExchange: '',
+  })
+  syncOpportunityControls()
+  renderOpportunities()
 })
 
 refs.opportunityList.addEventListener('click', async (event) => {
@@ -114,6 +156,7 @@ function render() {
 
   refs.platformCoverage.innerHTML = renderPlatformCoverage(snapshot.platformCoverage)
   refs.oracleList.innerHTML = snapshot.oracleResults.map(renderMarketMatrix).join('')
+  populateExchangeFilters()
   renderOpportunities()
   renderExchanges()
 }
@@ -128,11 +171,25 @@ function renderOpportunities() {
 }
 
 function filterOpportunities(opportunities) {
-  if (activeFilter === 'instant') return opportunities.filter((item) => item.type === 'INSTANT_BUY_ORDER')
-  if (activeFilter === 'theoretical') return opportunities.filter((item) => item.type === 'THEORETICAL_LISTING')
-  if (activeFilter === 'strong') return opportunities.filter((item) => item.level === 'STRONG_EXECUTABLE')
-  if (activeFilter === 'watch') return opportunities.filter((item) => item.level !== 'STRONG_EXECUTABLE')
-  return opportunities
+  const minSpread = parseSpreadInput(opportunityControls.minSpread)
+  const maxSpread = parseSpreadInput(opportunityControls.maxSpread)
+  const basisField = opportunityControls.spreadBasis === 'gross' ? 'grossProfitRate' : 'netProfitRate'
+
+  const filtered = opportunities.filter((item) => {
+    if (activeFilter === 'instant' && item.type !== 'INSTANT_BUY_ORDER') return false
+    if (activeFilter === 'theoretical' && item.type !== 'THEORETICAL_LISTING') return false
+    if (activeFilter === 'strong' && item.level !== 'STRONG_EXECUTABLE') return false
+    if (activeFilter === 'watch' && item.level === 'STRONG_EXECUTABLE') return false
+    if (opportunityControls.sellExchange && item.sellPlatformId !== opportunityControls.sellExchange) return false
+    if (opportunityControls.buyExchange && item.buyPlatformId !== opportunityControls.buyExchange) return false
+
+    const spread = Number(item[basisField]) || 0
+    if (minSpread !== null && spread < minSpread) return false
+    if (maxSpread !== null && spread > maxSpread) return false
+    return true
+  })
+
+  return sortOpportunities(filtered)
 }
 
 function renderOpportunity(item) {
@@ -140,6 +197,8 @@ function renderOpportunity(item) {
   const typeClass = item.type === 'INSTANT_BUY_ORDER' ? 'instant' : 'theoretical'
   const scoreLabel = item.type === 'INSTANT_BUY_ORDER' ? '成交确定性' : '挂单成交评分'
   const scoreValue = item.type === 'INSTANT_BUY_ORDER' ? item.liquidityScore : item.listingFillProbability
+  const feeRates = item.feeRateBreakdown || { sell: {}, buy: {} }
+  const fees = item.feeBreakdown || {}
   const reasons = item.rejectReasons.length
     ? `<ul class="reason-list">${item.rejectReasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join('')}</ul>`
     : ''
@@ -159,8 +218,9 @@ function renderOpportunity(item) {
           <p>${escapeHtml(item.itemName)}</p>
         </div>
         <div class="profit-stamp">
-          <span>净利率</span>
+          <span>净利差</span>
           <strong>${pct(item.netProfitRate)}</strong>
+          <small>毛利差 ${pct(item.grossProfitRate)}</small>
         </div>
       </div>
 
@@ -177,18 +237,29 @@ function renderOpportunity(item) {
 
       <div class="metric-grid compact">
         <div><span>数量</span><strong>${item.quantity}</strong></div>
-        <div><span>预计净收益</span><strong>${formatMoney(item.totalNetProfit)}</strong></div>
-        <div><span>单件收益</span><strong>${formatMoney(item.unitNetProfit)}</strong></div>
+        <div><span>毛利润</span><strong>${formatMoney(item.totalGrossProfit)}</strong></div>
+        <div><span>净利润</span><strong>${formatMoney(item.totalNetProfit)}</strong></div>
+        <div><span>单件净利</span><strong>${formatMoney(item.unitNetProfit)}</strong></div>
+        <div><span>毛利差</span><strong>${pct(item.grossProfitRate)}</strong></div>
+        <div><span>净利差</span><strong>${pct(item.netProfitRate)}</strong></div>
+        <div><span>手续费估算</span><strong>${formatMoney(item.estimatedFeeTotal)}</strong></div>
+        <div><span>总成本率</span><strong>${pct(item.totalCostRate)}</strong></div>
         <div><span>流动性</span><strong>${pct(item.liquidityScore)}</strong></div>
         <div><span>${scoreLabel}</span><strong>${pct(scoreValue)}</strong></div>
         <div><span>可信度</span><strong>${confidenceName(item.confidence)}</strong></div>
       </div>
 
       <div class="fee-grid">
-        <span>卖出费用 ${formatMoney(item.feeBreakdown.sellFee)}</span>
-        <span>买入费用 ${formatMoney(item.feeBreakdown.buyFee)}</span>
-        <span>资金成本 ${formatMoney(item.feeBreakdown.depositCost)}</span>
-        <span>风险缓冲 ${formatMoney(item.feeBreakdown.riskBuffer)}</span>
+        <span>卖出费率 ${pct(feeRates.sell.totalFeeRate)}</span>
+        <span>买入费率 ${pct(feeRates.buy.totalFeeRate)}</span>
+        <span>充值成本率 ${pct(feeRates.buy.depositCostRate)}</span>
+        <span>汇率成本率 ${pct(feeRates.buy.fxCostRate)}</span>
+        <span>卖出费用 ${formatMoney(fees.sellFee)}</span>
+        <span>买入费用 ${formatMoney(fees.buyFee)}</span>
+        <span>充值成本 ${formatMoney(fees.depositCost)}</span>
+        <span>汇率成本 ${formatMoney(fees.fxCost)}</span>
+        <span>总手续费 ${formatMoney(fees.estimatedFeeTotal)}</span>
+        <span>风险缓冲 ${formatMoney(fees.riskBuffer)}</span>
       </div>
 
       ${notes}
@@ -365,6 +436,88 @@ function renderExecutionPreview(plan) {
 
 function renderEmpty(text) {
   return `<div class="empty-state">${escapeHtml(text)}</div>`
+}
+
+function parseSpreadInput(value) {
+  const text = String(value ?? '').trim()
+  if (!text) return null
+  const parsed = Number(text)
+  return Number.isFinite(parsed) ? parsed / 100 : null
+}
+
+function sortOpportunities(opportunities) {
+  const sorters = {
+    'net-desc': (a, b) => b.netProfitRate - a.netProfitRate,
+    'net-asc': (a, b) => a.netProfitRate - b.netProfitRate,
+    'gross-desc': (a, b) => b.grossProfitRate - a.grossProfitRate,
+    'gross-asc': (a, b) => a.grossProfitRate - b.grossProfitRate,
+    'profit-desc': (a, b) => b.totalNetProfit - a.totalNetProfit,
+    'fee-asc': (a, b) => a.estimatedFeeTotal - b.estimatedFeeTotal,
+  }
+  const sorter = sorters[opportunityControls.sortMode] || sorters['net-desc']
+  return [...opportunities].sort((a, b) => sorter(a, b) || opportunityTieBreak(a, b))
+}
+
+function opportunityTieBreak(a, b) {
+  const levelScore = {
+    STRONG_EXECUTABLE: 4,
+    WATCH_ONLY: 2,
+    NEEDS_VERIFICATION: 1,
+    REJECTED: 0,
+  }
+  const typeScore = {
+    INSTANT_BUY_ORDER: 2,
+    THEORETICAL_LISTING: 1,
+  }
+
+  return (
+    (levelScore[b.level] || 0) - (levelScore[a.level] || 0) ||
+    (typeScore[b.type] || 0) - (typeScore[a.type] || 0) ||
+    b.totalNetProfit - a.totalNetProfit ||
+    b.liquidityScore - a.liquidityScore ||
+    a.opportunityId.localeCompare(b.opportunityId)
+  )
+}
+
+function populateExchangeFilters() {
+  if (!snapshot) return
+  const catalogOptions = (snapshot.platformCoverage?.catalog || []).map((platform) => ({
+    id: platform.platformId,
+    name: platform.name,
+  }))
+  const opportunityOptions = Array.from(
+    new Map(
+      snapshot.opportunities.flatMap((item) => [
+        [item.sellPlatformId, { id: item.sellPlatformId, name: item.sellPlatformName }],
+        [item.buyPlatformId, { id: item.buyPlatformId, name: item.buyPlatformName }],
+      ]),
+    ).values(),
+  )
+  const options = (catalogOptions.length ? catalogOptions : opportunityOptions).sort((a, b) => a.name.localeCompare(b.name))
+
+  syncExchangeSelect(refs.sellExchangeFilter, options, '任意卖出交易所', 'sellExchange')
+  syncExchangeSelect(refs.buyExchangeFilter, options, '任意买入交易所', 'buyExchange')
+}
+
+function syncExchangeSelect(element, options, placeholder, key) {
+  if (!element) return
+  const current = opportunityControls[key]
+  element.innerHTML = [
+    `<option value="">${escapeHtml(placeholder)}</option>`,
+    ...options.map((platform) => `<option value="${escapeAttr(platform.id)}">${escapeHtml(platform.name)}</option>`),
+  ].join('')
+  const stillExists = !current || options.some((platform) => platform.id === current)
+  opportunityControls[key] = stillExists ? current : ''
+  element.value = opportunityControls[key]
+}
+
+function syncOpportunityControls() {
+  refs.sortMode.value = opportunityControls.sortMode
+  refs.spreadBasis.value = opportunityControls.spreadBasis
+  refs.minSpread.value = opportunityControls.minSpread
+  refs.maxSpread.value = opportunityControls.maxSpread
+  refs.sellExchangeFilter.value = opportunityControls.sellExchange
+  refs.buyExchangeFilter.value = opportunityControls.buyExchange
 }
 
 function displayTypeName(type) {

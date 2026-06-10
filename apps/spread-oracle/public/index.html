@@ -82,6 +82,48 @@
             <button class="filter" data-filter="watch" type="button">需复核</button>
           </nav>
 
+          <section class="opportunity-controls glass-panel" aria-label="利差排序和交易所筛选">
+            <label>
+              <span>排序</span>
+              <select id="sortMode">
+                <option value="net-desc">净利差高到低</option>
+                <option value="net-asc">净利差低到高</option>
+                <option value="gross-desc">毛利差高到低</option>
+                <option value="gross-asc">毛利差低到高</option>
+                <option value="profit-desc">净利润高到低</option>
+                <option value="fee-asc">手续费低到高</option>
+              </select>
+            </label>
+            <label>
+              <span>利差口径</span>
+              <select id="spreadBasis">
+                <option value="net">净利差</option>
+                <option value="gross">毛利差</option>
+              </select>
+            </label>
+            <label>
+              <span>最低利差%</span>
+              <input id="minSpread" inputmode="decimal" min="-100" step="0.01" type="number" />
+            </label>
+            <label>
+              <span>最高利差%</span>
+              <input id="maxSpread" inputmode="decimal" min="-100" step="0.01" type="number" />
+            </label>
+            <label>
+              <span>卖出交易所</span>
+              <select id="sellExchangeFilter">
+                <option value="">任意</option>
+              </select>
+            </label>
+            <label>
+              <span>买入交易所</span>
+              <select id="buyExchangeFilter">
+                <option value="">任意</option>
+              </select>
+            </label>
+            <button id="resetOpportunityFilters" class="ghost-button" type="button">重置</button>
+          </section>
+
           <section class="panel glass-panel opportunity-panel">
             <div class="panel-title">
               <div>

@@ -314,9 +314,16 @@ function buildOpportunityPayload({
     quantity,
     sellPrice: money(sellPrice),
     buyPrice: money(buyPrice),
+    unitGrossProfit: money(economics.unitGrossProfit),
+    totalGrossProfit: money(economics.totalGrossProfit),
+    grossProfitRate: rate(economics.grossProfitRate),
     unitNetProfit: money(economics.unitNetProfit),
     totalNetProfit: money(economics.totalNetProfit),
     netProfitRate: rate(economics.netProfitRate),
+    estimatedFeeTotal: money(economics.estimatedFeeTotal),
+    estimatedFeeRate: rate(economics.estimatedFeeRate),
+    totalCostWithRisk: money(economics.totalCostWithRisk),
+    totalCostRate: rate(economics.totalCostRate),
     liquidityScore,
     makerBuyProbability: buyQuote.makerBuyProbability,
     listingFillProbability: sellQuote.listingFillProbability,
@@ -324,6 +331,7 @@ function buildOpportunityPayload({
     level,
     executable,
     feeBreakdown: economics.feeBreakdown,
+    feeRateBreakdown: economics.feeRateBreakdown,
     liquidityCheck: {
       accepted: level !== 'REJECTED',
       sellDepthQuantity: sellQuote.takerSellQuantity,
@@ -401,15 +409,35 @@ function computeEconomics({ sellPrice, buyPrice, quantity, sellPlatform, buyPlat
   const buyFee = buyPlatformFee + buyExecutionFee + depositCost + fxCost
   const buyCost = buyGross + buyFee
   const riskBuffer = buyCost * riskBufferRate
+  const totalGrossProfit = sellGross - buyGross
   const totalNetProfit = sellNet - buyCost - riskBuffer
+  const unitGrossProfit = safeQuantity > 0 ? totalGrossProfit / safeQuantity : 0
   const unitNetProfit = safeQuantity > 0 ? totalNetProfit / safeQuantity : 0
+  const grossProfitRate = buyGross > 0 ? totalGrossProfit / buyGross : 0
   const netProfitRate = buyCost > 0 ? totalNetProfit / buyCost : 0
+  const estimatedFeeTotal = sellFee + buyFee
+  const totalCostWithRisk = estimatedFeeTotal + riskBuffer
+  const estimatedFeeRate = buyGross > 0 ? estimatedFeeTotal / buyGross : 0
+  const totalCostRate = buyGross > 0 ? totalCostWithRisk / buyGross : 0
+  const sellTotalFeeRate = sellPlatform.fees.sellerFeeRate + sellModeFeeRate
+  const buyTotalFeeRate =
+    buyPlatform.fees.buyerFeeRate + buyModeFeeRate + buyPlatform.fees.depositCostRate + buyPlatform.fees.fxCostRate
 
   return {
+    unitGrossProfit,
+    totalGrossProfit,
+    grossProfitRate,
     unitNetProfit,
     totalNetProfit,
     netProfitRate,
+    estimatedFeeTotal,
+    estimatedFeeRate,
+    totalCostWithRisk,
+    totalCostRate,
     feeBreakdown: {
+      sellGross: money(sellGross),
+      buyGross: money(buyGross),
+      totalGrossProfit: money(totalGrossProfit),
       sellPlatformFee: money(sellPlatformFee),
       sellExecutionFee: money(sellExecutionFee),
       sellFee: money(sellFee),
@@ -421,6 +449,27 @@ function computeEconomics({ sellPrice, buyPrice, quantity, sellPlatform, buyPlat
       buyFee: money(buyFee),
       buyCost: money(buyCost),
       riskBuffer: money(riskBuffer),
+      estimatedFeeTotal: money(estimatedFeeTotal),
+      totalCostWithRisk: money(totalCostWithRisk),
+    },
+    feeRateBreakdown: {
+      sell: {
+        sellerFeeRate: rate(sellPlatform.fees.sellerFeeRate),
+        executionFeeRate: rate(sellModeFeeRate),
+        totalFeeRate: rate(sellTotalFeeRate),
+        confidence: sellPlatform.fees.confidence,
+      },
+      buy: {
+        buyerFeeRate: rate(buyPlatform.fees.buyerFeeRate),
+        executionFeeRate: rate(buyModeFeeRate),
+        depositCostRate: rate(buyPlatform.fees.depositCostRate),
+        fxCostRate: rate(buyPlatform.fees.fxCostRate),
+        totalFeeRate: rate(buyTotalFeeRate),
+        confidence: buyPlatform.fees.confidence,
+      },
+      riskBufferRate: rate(riskBufferRate),
+      estimatedFeeRate: rate(estimatedFeeRate),
+      totalCostRate: rate(totalCostRate),
     },
   }
 }
