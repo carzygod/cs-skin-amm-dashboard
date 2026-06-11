@@ -3,6 +3,13 @@ import { platformCatalog, platformCatalogSource } from './platform-catalog.mjs'
 const DEFAULT_TIMEOUT_MS = 4500
 const CACHE_TTL_MS = 30000
 const CONCURRENCY = 8
+const PROBE_HEADERS = {
+  'user-agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 CS-AMM-Probe/1.0',
+  accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'accept-language': 'en-US,en;q=0.8,zh-CN;q=0.6',
+  'cache-control': 'no-cache',
+}
 
 let cachedSnapshot = null
 
@@ -73,25 +80,23 @@ async function fetchWithTimeout(url, timeoutMs) {
   const timer = setTimeout(() => controller.abort(new Error('probe-timeout')), timeoutMs)
 
   try {
-    const head = await fetch(url, {
-      method: 'HEAD',
-      redirect: 'follow',
-      signal: controller.signal,
-      headers: {
-        'user-agent': 'CS-AMM connectivity probe',
-      },
-    })
-
-    if (head.status !== 405) return head
-
-    return fetch(url, {
+    const get = await fetch(url, {
       method: 'GET',
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'user-agent': 'CS-AMM connectivity probe',
+        ...PROBE_HEADERS,
         range: 'bytes=0-1024',
       },
+    })
+
+    if (get.status !== 405) return get
+
+    return fetch(url, {
+      method: 'HEAD',
+      redirect: 'follow',
+      signal: controller.signal,
+      headers: PROBE_HEADERS,
     })
   } finally {
     clearTimeout(timer)
