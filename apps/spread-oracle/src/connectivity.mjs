@@ -1,8 +1,8 @@
 import { platformCatalog, platformCatalogSource } from './platform-catalog.mjs'
 
-const DEFAULT_TIMEOUT_MS = 4500
+const DEFAULT_TIMEOUT_MS = 6500
 const CACHE_TTL_MS = 30000
-const CONCURRENCY = 8
+const CONCURRENCY = 4
 const PROBE_HEADERS = {
   'user-agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 CS-AMM-Probe/1.0',
