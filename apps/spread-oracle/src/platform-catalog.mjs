@@ -60,6 +60,18 @@ const PROBE_TARGETS = {
   uuskins: ['https://csgoskins.gg/markets/uuskins', 'directory'],
   'skins-com': ['https://skins.com/', 'direct'],
   'market-csgo': ['https://market.csgo.com/en/', 'direct'],
+  'swap-gg': ['https://swap.gg/', 'direct'],
+  'loot-farm': ['https://loot.farm/en/', 'direct'],
+  'skins-cash': ['https://skins.cash/', 'direct'],
+  skincashier: ['https://skincashier.com/', 'direct'],
+  skinwallet: ['https://www.skinwallet.com/', 'direct'],
+  'cs-deals': ['https://cs.deals/market/', 'direct'],
+  'itrade-gg': ['https://itrade.gg/', 'direct'],
+  'clash-gg': ['https://stash.clash.gg/marketplace', 'direct'],
+  skinsmonkey: ['https://skinsmonkey.com/', 'direct'],
+  c5game: ['https://www.c5game.com/', 'direct'],
+  youpin: ['https://www.youpin898.com/', 'direct'],
+  igxe: ['https://www.igxe.cn/', 'direct'],
   haloskins: ['https://haloskins.com/', 'direct'],
   exeskins: ['https://exeskins.com/', 'direct'],
   ntskins: ['https://ntskins.com/', 'direct'],
@@ -67,11 +79,11 @@ const PROBE_TARGETS = {
 }
 
 export const platformCatalogSource = {
-  name: 'CSGOSKINS.GG Markets + manual market.csgo.com',
+  name: 'CSGOSKINS.GG Markets + searched manual markets',
   url: CSGOSKINS_MARKETS_URL,
   sourceScope: 'market-directory-plus-manual',
   notes:
-    'The CSGOSKINS.GG directory is used as the canonical market baseline, with market.csgo.com added as a manual platform request. Fees and execution capabilities still require direct platform or account-level verification before live trading.',
+    'The CSGOSKINS.GG directory is used as the canonical market baseline, with market.csgo.com and additional web-searched markets added manually. Fees and execution capabilities still require direct platform or account-level verification before live trading.',
 }
 
 export const platformCatalog = [
@@ -105,6 +117,42 @@ export const platformCatalog = [
   market('skins-com', 'Skins.com', 'skins-com', 3.9, '120', '12.9K', '49.4K', '$5.2M', 31.8, '106.8K', 'cash-market'),
   market('market-csgo', 'CSGO Market', 'market-csgo', 3.8, 'manual', 'market', 'manual', 'unknown', 28.0, 'manual', 'cash-market', {
     sourceUrl: 'https://market.csgo.com/en/',
+  }),
+  market('swap-gg', 'Swap.gg', 'swap-gg', 4.2, 'manual', '200K+', 'manual', 'unknown', 27.0, 'manual', 'trade-bot', {
+    sourceUrl: 'https://swap.gg/',
+  }),
+  market('loot-farm', 'LOOT.Farm', 'loot-farm', 4.0, 'manual', 'multi-game', 'manual', 'unknown', 25.0, 'manual', 'trade-bot', {
+    sourceUrl: 'https://loot.farm/en/',
+  }),
+  market('skins-cash', 'Skins.Cash', 'skins-cash', 4.0, 'manual', 'instant-sell', 'manual', 'unknown', 30.0, 'manual', 'cash-market', {
+    sourceUrl: 'https://skins.cash/',
+  }),
+  market('skincashier', 'SkinCashier', 'skincashier', 4.2, 'manual', 'instant-sell', 'manual', 'unknown', 30.0, 'manual', 'cash-market', {
+    sourceUrl: 'https://skincashier.com/',
+  }),
+  market('skinwallet', 'Skinwallet', 'skinwallet', 3.8, 'manual', 'instant-sell', 'manual', 'unknown', 30.0, 'manual', 'cash-market', {
+    sourceUrl: 'https://www.skinwallet.com/',
+  }),
+  market('cs-deals', 'CS.Deals', 'cs-deals', 4.0, 'manual', 'market', 'manual', 'unknown', 28.0, 'manual', 'cash-market', {
+    sourceUrl: 'https://cs.deals/market/',
+  }),
+  market('itrade-gg', 'iTrade.gg', 'itrade-gg', 4.3, 'manual', 'trade-bot', 'manual', 'unknown', 27.0, 'manual', 'trade-bot', {
+    sourceUrl: 'https://itrade.gg/',
+  }),
+  market('clash-gg', 'Clash.gg Marketplace', 'clash-gg', 4.0, 'manual', 'market', 'manual', 'unknown', 28.0, 'manual', 'trade-bot', {
+    sourceUrl: 'https://stash.clash.gg/marketplace',
+  }),
+  market('skinsmonkey', 'SkinsMonkey', 'skinsmonkey', 4.4, 'manual', 'trade-bot', 'manual', 'unknown', 27.0, 'manual', 'trade-bot', {
+    sourceUrl: 'https://skinsmonkey.com/',
+  }),
+  market('c5game', 'C5Game', 'c5game', 4.2, 'manual', 'market', 'manual', 'unknown', 28.0, 'manual', 'cash-market', {
+    sourceUrl: 'https://www.c5game.com/',
+  }),
+  market('youpin', 'YouPin', 'youpin', 4.1, 'manual', 'market', 'manual', 'unknown', 28.0, 'manual', 'cash-market', {
+    sourceUrl: 'https://www.youpin898.com/',
+  }),
+  market('igxe', 'IGXE', 'igxe', 4.0, 'manual', 'market', 'manual', 'unknown', 28.0, 'manual', 'cash-market', {
+    sourceUrl: 'https://www.igxe.cn/',
   }),
   market('haloskins', 'HaloSkins', 'haloskins', 3.9, '265', '27.7K', '3.9M', '$39.7M', 30.3, '65.6K', 'cash-market'),
   market('exeskins', 'Exeskins', 'exeskins', 4.1, '34', '20.8K', '740.6K', '$18.4M', 30.6, '64.7K', 'cash-market'),

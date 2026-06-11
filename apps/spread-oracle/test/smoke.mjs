@@ -26,27 +26,47 @@ if (!snapshot.summary.instantCount || !snapshot.summary.theoreticalCount) {
   throw new Error('expected split summary counters')
 }
 
-if (!snapshot.platformCoverage || snapshot.platformCoverage.summary.catalogTotal !== 33) {
-  throw new Error('expected 33 platforms including market.csgo.com')
+if (!snapshot.platformCoverage || snapshot.platformCoverage.summary.catalogTotal !== 45) {
+  throw new Error('expected 45 platforms including additional searched markets')
 }
 
-if (snapshot.platformCoverage.summary.sampleQuoteCoverage !== 33) {
-  throw new Error('expected sample quote coverage for all 33 platforms')
+if (snapshot.platformCoverage.summary.sampleQuoteCoverage !== 45) {
+  throw new Error('expected sample quote coverage for all 45 platforms')
 }
 
-if (!snapshot.oracleResults.every((item) => item.quotes.length === 33)) {
-  throw new Error('expected every oracle result to include all 33 platform quotes')
+if (!snapshot.oracleResults.every((item) => item.quotes.length === 45)) {
+  throw new Error('expected every oracle result to include all 45 platform quotes')
 }
 
-if (platformCatalog.length !== 33) {
-  throw new Error('expected 33 platforms in platform catalog')
+if (platformCatalog.length !== 45) {
+  throw new Error('expected 45 platforms in platform catalog')
 }
 
 if (!platformCatalog.every((platform) => platform.sourceUrl && platform.probeUrl && platform.probeTargetKind)) {
   throw new Error('expected source and connectivity probe target for every platform')
 }
 
-for (const requiredPlatform of ['Steam', 'CSFloat', 'Skinport', 'DMarket', 'WAXPEER', 'BUFF163', 'CSGO Market']) {
+for (const requiredPlatform of [
+  'Steam',
+  'CSFloat',
+  'Skinport',
+  'DMarket',
+  'WAXPEER',
+  'BUFF163',
+  'CSGO Market',
+  'Swap.gg',
+  'LOOT.Farm',
+  'Skins.Cash',
+  'SkinCashier',
+  'Skinwallet',
+  'CS.Deals',
+  'iTrade.gg',
+  'Clash.gg Marketplace',
+  'SkinsMonkey',
+  'C5Game',
+  'YouPin',
+  'IGXE',
+]) {
   if (!platformCatalog.some((platform) => platform.name === requiredPlatform)) {
     throw new Error(`expected platform catalog to include ${requiredPlatform}`)
   }
@@ -127,7 +147,7 @@ if (opportunityPlatforms.size < 10) {
   throw new Error('expected opportunities to cover more than the legacy domestic sample platforms')
 }
 
-for (const requiredOpportunityPlatform of ['CS2', 'PirateSwap', 'CS.TRADE', 'CSGO Market']) {
+for (const requiredOpportunityPlatform of ['CS2', 'PirateSwap', 'CS.TRADE', 'CSGO Market', 'Swap.gg', 'C5Game']) {
   if (!opportunityPlatforms.has(requiredOpportunityPlatform)) {
     throw new Error(`expected opportunities to include ${requiredOpportunityPlatform}`)
   }
